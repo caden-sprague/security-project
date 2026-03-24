@@ -1,1 +1,4 @@
 .DS_Store
+rf_model.pkl
+__pycache__/
+*.pyc
