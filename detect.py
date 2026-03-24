@@ -103,19 +103,21 @@ def predict(pcap_path: str):
     probs      = model.predict_proba(df_mqtt)          # shape: (n_packets, 2)
     preds      = model.predict(df_mqtt)                # 0=normal, 1=attack
 
+    # model.classes_ is [0, 1], so column 1 is P(attack)
+    attack_col = list(model.classes_).index(1)
     attack_pct = preds.mean() * 100
-    mean_conf  = probs.max(axis=1).mean() * 100
+    mean_attack_prob = probs[:, attack_col].mean() * 100
 
     label = "ATTACK" if attack_pct >= 50 else "NORMAL"
 
     print()
     print("=" * 40)
-    print(f"  Verdict    : {label}")
-    print(f"  Attack pkts: {preds.sum()} / {len(preds)}  ({attack_pct:.1f}%)")
-    print(f"  Avg conf   : {mean_conf:.1f}%")
+    print(f"  Verdict       : {label}")
+    print(f"  Attack pkts   : {preds.sum()} / {len(preds)}  ({attack_pct:.1f}%)")
+    print(f"  Avg attack prob: {mean_attack_prob:.1f}%")
     print("=" * 40)
 
-    return label, attack_pct, mean_conf
+    return label, attack_pct, mean_attack_prob
 
 
 if __name__ == "__main__":
