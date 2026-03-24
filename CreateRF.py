@@ -60,7 +60,7 @@ def createRF():
     RF.fit(X_train, y_train)
 
     # Save the trained model and test set to disk for use in other scripts
-    joblib.dump({"model": RF, "X_test": X_test, "y_test": y_test}, "rf_model.pkl")
+    joblib.dump({"model": RF, "X_test": X_test, "y_test": y_test, "hdrflags_encoder": label_encoder}, "rf_model.pkl")
 
     return RF, X_test, y_test
 
