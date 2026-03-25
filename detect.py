@@ -78,6 +78,26 @@ def preprocess(df: pd.DataFrame, encoder=None) -> pd.DataFrame:
     return df
 
 
+def get_attacker_ips(pcap_path: str) -> list[str]:
+    """Return unique source IPs of packets destined for the MQTT broker (port 1883).
+
+    These are the clients sending traffic to the broker — i.e. the attackers
+    in a flood scenario. Loopback addresses are excluded since blocking 127.x
+    via iptables INPUT has no effect on loopback traffic.
+    """
+    cmd = (
+        f"tshark -r {pcap_path} -T fields -e ip.src "
+        f"-Y 'tcp.dstport==1883' -E occurrence=f"
+    )
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    ips = set()
+    for line in result.stdout.splitlines():
+        ip = line.strip()
+        if ip and not ip.startswith("127.") and ip != "::1":
+            ips.add(ip)
+    return list(ips)
+
+
 def predict(pcap_path: str):
     if not os.path.exists(MODEL_PATH):
         raise FileNotFoundError(f"Model not found at '{MODEL_PATH}'. Run CreateRF.py first.")
@@ -96,19 +116,21 @@ def predict(pcap_path: str):
 
     if df_mqtt.empty:
         print("[!] No MQTT packets found in capture — cannot classify.")
-        return
+        return None, 0, 0, []
 
     print(f"[*] MQTT packets to classify: {len(df_mqtt)}")
 
-    probs      = model.predict_proba(df_mqtt)          # shape: (n_packets, 2)
-    preds      = model.predict(df_mqtt)                # 0=normal, 1=attack
+    probs      = model.predict_proba(df_mqtt)
+    preds      = model.predict(df_mqtt)
 
-    # model.classes_ is [0, 1], so column 1 is P(attack)
-    attack_col = list(model.classes_).index(1)
-    attack_pct = preds.mean() * 100
+    attack_col       = list(model.classes_).index(1)
+    attack_pct       = preds.mean() * 100
     mean_attack_prob = probs[:, attack_col].mean() * 100
 
     label = "ATTACK" if attack_pct >= 50 else "NORMAL"
+
+    # Only extract IPs when we have an attack to act on
+    attacker_ips = get_attacker_ips(pcap_path) if label == "ATTACK" else []
 
     print()
     print("=" * 40)
@@ -117,7 +139,7 @@ def predict(pcap_path: str):
     print(f"  Avg attack prob: {mean_attack_prob:.1f}%")
     print("=" * 40)
 
-    return label, attack_pct, mean_attack_prob
+    return label, attack_pct, mean_attack_prob, attacker_ips
 
 
 if __name__ == "__main__":

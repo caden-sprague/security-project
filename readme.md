@@ -10,10 +10,7 @@ This project replicates and extends the paper's machine learning-based malicious
 
 When malicious traffic is detected, the system automatically:
 - Inserts blocking rules via `iptables` to reject the attacker's IP
-- Terminates the malicious connection
-- Logs all enforcement actions for analysis
-
-A **debug mode** is also included for safe demonstration, prompting for user confirmation before any firewall rules are applied.
+- Logs all enforcement actions and detection results to `ips_demo.log`
 
 ## Dataset
 
@@ -31,7 +28,11 @@ The classifier uses 10 features selected in the paper: `frame.time_delta`, `tcp.
 
 | File | Description |
 |------|-------------|
-| `CreateRF.py` | Trains the Random Forest classifier (based on the paper's code) |
+| `CreateRF.py` | Trains the Random Forest classifier and saves it to `rf_model.pkl` |
+| `detect.py` | Extracts features from a pcap file and classifies traffic as NORMAL or ATTACK |
+| `demo_csv.py` | IPS demo using the held-out test split — classifies rolling windows and blocks attacker IPs via iptables |
+| `normal.py` | Simulates normal ICU sensor traffic via paho-mqtt |
+| `malicious.py` | Simulates a flood attack via paho-mqtt |
 | `requirements.txt` | Python dependencies |
 | `rf_model.pkl` | Saved trained model *(not committed — generate locally, see below)* |
 
@@ -39,6 +40,13 @@ The classifier uses 10 features selected in the paper: `frame.time_delta`, `tcp.
 
 ```bash
 pip3 install -r requirements.txt
+```
+
+tshark is also required for live capture (`detect.py`):
+
+```bash
+# Debian/Ubuntu
+sudo apt-get install tshark
 ```
 
 ## Usage
@@ -49,11 +57,21 @@ pip3 install -r requirements.txt
 python3 CreateRF.py
 ```
 
-Trains the Random Forest on the ICU dataset and evaluates it on the held-out test set, printing accuracy, precision, recall, F1-score, and the confusion matrix. The trained model is saved to `rf_model.pkl` — subsequent runs skip retraining and load from disk automatically.
+Trains the Random Forest on the ICU dataset and evaluates it on the held-out test set, printing accuracy, precision, recall, F1-score, and the confusion matrix. The trained model is saved to `rf_model.pkl`.
+
+### Run the IPS Demo
+
+```bash
+sudo python3 demo_csv.py [window_size] [n_windows]
+```
+
+Classifies rolling windows of packets from the held-out test split. Normal traffic windows are shown first, then attack windows. Each detected attack triggers an `iptables` DROP rule for a simulated attacker IP. All actions are logged to `ips_demo.log`. Requires `sudo` for iptables.
+
+Defaults: 20 packets per window, 5 windows per class.
 
 ## Model Details
 
 - Algorithm: Random Forest Classifier
 - Max depth: 10
-- Train/test split: 70% / 30% (`random_state=100`)
+- Train/test split: 90% / 10% (`random_state=100`)
 - Fixed random seed ensures fully reproducible results
