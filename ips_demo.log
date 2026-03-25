@@ -1,194 +1,27 @@
-2026-03-24 23:53:03  INFO      ============================================================
-2026-03-24 23:53:03  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-24 23:53:03  INFO      ============================================================
-2026-03-24 23:53:03  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-24 23:53:03  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-24 23:53:04  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-24 23:53:05  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:53:06  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:53:06  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:53:06  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.102 -j DROP
-2026-03-24 23:53:07  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:53:07  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.103 -j DROP
-2026-03-24 23:53:08  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:53:08  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
-2026-03-24 23:53:09  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
-2026-03-24 23:53:09  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.105 -j DROP
-2026-03-24 23:53:09  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
-2026-03-24 23:53:09  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
-2026-03-24 23:53:10  INFO      UNBLOCKED  192.168.1.104
-2026-03-24 23:53:10  INFO      UNBLOCKED  192.168.1.101
-2026-03-24 23:53:10  INFO      UNBLOCKED  192.168.1.105
-2026-03-24 23:53:10  INFO      UNBLOCKED  192.168.1.103
-2026-03-24 23:53:10  INFO      UNBLOCKED  192.168.1.102
-2026-03-24 23:53:10  INFO      ============================================================
-2026-03-24 23:53:10  INFO      SESSION END  windows=10/10 correct  ips_blocked=5  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
-2026-03-24 23:53:10  INFO      ============================================================
-2026-03-24 23:53:10  INFO      Log written to /media/sf_Project/ips_demo.log
-2026-03-24 23:54:23  INFO      ============================================================
-2026-03-24 23:54:23  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-24 23:54:23  INFO      ============================================================
-2026-03-24 23:54:23  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-24 23:54:24  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-24 23:54:24  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-24 23:54:25  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:54:26  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:54:26  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:54:26  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.102 -j DROP
-2026-03-24 23:54:27  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:54:27  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.103 -j DROP
-2026-03-24 23:54:28  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:54:28  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
-2026-03-24 23:54:29  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
-2026-03-24 23:54:29  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.105 -j DROP
-2026-03-24 23:54:30  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
-2026-03-24 23:54:30  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
-2026-03-24 23:54:31  INFO      UNBLOCKED  192.168.1.104
-2026-03-24 23:54:31  INFO      UNBLOCKED  192.168.1.102
-2026-03-24 23:54:31  INFO      UNBLOCKED  192.168.1.101
-2026-03-24 23:54:31  INFO      UNBLOCKED  192.168.1.105
-2026-03-24 23:54:31  INFO      UNBLOCKED  192.168.1.103
-2026-03-24 23:54:31  INFO      ============================================================
-2026-03-24 23:54:31  INFO      SESSION END  windows=10/10 correct  ips_blocked=5  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
-2026-03-24 23:54:31  INFO      ============================================================
-2026-03-24 23:54:31  INFO      Log written to /media/sf_Project/ips_demo.log
-2026-03-24 23:57:48  INFO      ============================================================
-2026-03-24 23:57:48  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-24 23:57:48  INFO      ============================================================
-2026-03-24 23:57:48  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-24 23:57:49  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-24 23:57:50  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-24 23:57:52  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:57:54  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:57:54  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:57:54  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.102 -j DROP
-2026-03-24 23:57:55  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:57:55  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.103 -j DROP
-2026-03-24 23:57:57  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:57:57  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
-2026-03-24 23:57:59  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
-2026-03-24 23:57:59  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.105 -j DROP
-2026-03-24 23:58:00  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
-2026-03-24 23:58:00  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
-2026-03-24 23:58:00  INFO      UNBLOCKED  192.168.1.105
-2026-03-24 23:58:00  INFO      UNBLOCKED  192.168.1.104
-2026-03-24 23:58:00  INFO      UNBLOCKED  192.168.1.103
-2026-03-24 23:58:00  INFO      UNBLOCKED  192.168.1.101
-2026-03-24 23:58:00  INFO      UNBLOCKED  192.168.1.102
-2026-03-24 23:58:01  INFO      ============================================================
-2026-03-24 23:58:01  INFO      SESSION END  windows=10/10 correct  ips_blocked=5  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
-2026-03-24 23:58:01  INFO      ============================================================
-2026-03-24 23:58:01  INFO      Log written to /media/sf_Project/ips_demo.log
-2026-03-24 23:58:05  INFO      ============================================================
-2026-03-24 23:58:05  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-24 23:58:05  INFO      ============================================================
-2026-03-24 23:58:06  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-24 23:58:06  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-24 23:58:07  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-24 23:58:08  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:58:09  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:58:28  INFO      ============================================================
-2026-03-24 23:58:28  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-24 23:58:28  INFO      ============================================================
-2026-03-24 23:58:28  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-24 23:58:29  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-24 23:58:29  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-24 23:58:30  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:58:31  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:58:32  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:58:39  INFO      DEBUG SKIP BLOCK  192.168.1.102
-2026-03-24 23:58:39  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:58:41  INFO      DEBUG SKIP BLOCK  192.168.1.103
-2026-03-24 23:58:41  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:58:42  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
-2026-03-24 23:58:43  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
-2026-03-24 23:58:45  INFO      DEBUG SKIP BLOCK  192.168.1.105
-2026-03-24 23:58:46  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
-2026-03-24 23:58:49  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
-2026-03-24 23:58:55  INFO      UNBLOCKED  192.168.1.101
-2026-03-24 23:58:59  INFO      UNBLOCKED  192.168.1.104
-2026-03-24 23:58:59  INFO      ============================================================
-2026-03-24 23:58:59  INFO      SESSION END  windows=10/10 correct  ips_blocked=2  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
-2026-03-24 23:58:59  INFO      ============================================================
-2026-03-24 23:58:59  INFO      Log written to /media/sf_Project/ips_demo.log
-2026-03-24 23:59:26  INFO      ============================================================
-2026-03-24 23:59:26  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-24 23:59:26  INFO      ============================================================
-2026-03-24 23:59:26  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-24 23:59:27  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-24 23:59:27  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-24 23:59:28  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:59:29  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-24 23:59:30  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:59:30  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.102 -j DROP
-2026-03-24 23:59:30  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:59:30  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.103 -j DROP
-2026-03-24 23:59:31  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-24 23:59:31  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
-2026-03-24 23:59:32  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
-2026-03-24 23:59:32  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.105 -j DROP
-2026-03-24 23:59:33  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
-2026-03-24 23:59:33  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
-2026-03-24 23:59:34  INFO      UNBLOCKED  192.168.1.101
-2026-03-24 23:59:34  INFO      UNBLOCKED  192.168.1.105
-2026-03-24 23:59:34  INFO      UNBLOCKED  192.168.1.103
-2026-03-24 23:59:34  INFO      UNBLOCKED  192.168.1.102
-2026-03-24 23:59:34  INFO      UNBLOCKED  192.168.1.104
-2026-03-24 23:59:34  INFO      ============================================================
-2026-03-24 23:59:34  INFO      SESSION END  windows=10/10 correct  ips_blocked=5  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
-2026-03-24 23:59:34  INFO      ============================================================
-2026-03-24 23:59:34  INFO      Log written to /media/sf_Project/ips_demo.log
-2026-03-25 00:01:56  INFO      ============================================================
-2026-03-25 00:01:56  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-25 00:01:56  INFO      ============================================================
-2026-03-25 00:01:56  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-25 00:01:57  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-25 00:01:58  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-25 00:01:59  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-25 00:02:00  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-25 00:02:01  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-25 00:02:01  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.102 -j DROP
-2026-03-25 00:02:02  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-25 00:02:02  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.103 -j DROP
-2026-03-25 00:02:02  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-25 00:02:02  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
-2026-03-25 00:02:03  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
-2026-03-25 00:02:03  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.105 -j DROP
-2026-03-25 00:02:04  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
-2026-03-25 00:02:04  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
-2026-03-25 00:02:05  INFO      UNBLOCKED  192.168.1.101
-2026-03-25 00:02:05  INFO      UNBLOCKED  192.168.1.104
-2026-03-25 00:02:05  INFO      UNBLOCKED  192.168.1.102
-2026-03-25 00:02:05  INFO      UNBLOCKED  192.168.1.103
-2026-03-25 00:02:05  INFO      UNBLOCKED  192.168.1.105
-2026-03-25 00:02:05  INFO      ============================================================
-2026-03-25 00:02:05  INFO      SESSION END  windows=10/10 correct  ips_blocked=5  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
-2026-03-25 00:02:05  INFO      ============================================================
-2026-03-25 00:02:05  INFO      Log written to /media/sf_Project/ips_demo.log
-2026-03-25 00:03:44  INFO      ============================================================
-2026-03-25 00:03:44  INFO      SESSION START  window_size=20  n_windows=5
-2026-03-25 00:03:44  INFO      ============================================================
-2026-03-25 00:03:44  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
-2026-03-25 00:03:45  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
-2026-03-25 00:03:46  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
-2026-03-25 00:03:47  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-25 00:03:48  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
-2026-03-25 00:03:49  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-25 00:03:49  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.102 -j DROP
-2026-03-25 00:03:51  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-25 00:03:51  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.103 -j DROP
-2026-03-25 00:03:51  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
-2026-03-25 00:03:51  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
-2026-03-25 00:03:52  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
-2026-03-25 00:03:52  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.105 -j DROP
-2026-03-25 00:03:52  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
-2026-03-25 00:03:53  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
-2026-03-25 00:03:53  INFO      UNBLOCKED  192.168.1.104
-2026-03-25 00:03:53  INFO      UNBLOCKED  192.168.1.102
-2026-03-25 00:03:53  INFO      UNBLOCKED  192.168.1.101
-2026-03-25 00:03:53  INFO      UNBLOCKED  192.168.1.105
-2026-03-25 00:03:53  INFO      UNBLOCKED  192.168.1.103
-2026-03-25 00:03:54  INFO      ============================================================
-2026-03-25 00:03:54  INFO      SESSION END  windows=10/10 correct  ips_blocked=5  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
-2026-03-25 00:03:54  INFO      ============================================================
-2026-03-25 00:03:54  INFO      Log written to /media/sf_Project/ips_demo.log
+2026-03-25 00:11:01  INFO      ============================================================
+2026-03-25 00:11:01  INFO      SESSION START  window_size=20  n_windows=5
+2026-03-25 00:11:01  INFO      ============================================================
+2026-03-25 00:11:01  INFO      WINDOW 01  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.0%  correct=True
+2026-03-25 00:11:02  INFO      WINDOW 02  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=1.1%  correct=True
+2026-03-25 00:11:03  INFO      WINDOW 03  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.1%  correct=True
+2026-03-25 00:11:04  INFO      WINDOW 04  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
+2026-03-25 00:11:06  INFO      WINDOW 05  true=NORMAL  verdict=NORMAL  attack_pkts=0/20  avg_attack_prob=0.2%  correct=True
+2026-03-25 00:11:06  INFO      WINDOW 06  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
+2026-03-25 00:11:06  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.102 -j DROP
+2026-03-25 00:11:07  INFO      WINDOW 07  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
+2026-03-25 00:11:07  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.103 -j DROP
+2026-03-25 00:11:08  INFO      WINDOW 08  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.6%  correct=True
+2026-03-25 00:11:08  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.104 -j DROP
+2026-03-25 00:11:09  INFO      WINDOW 09  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=100.0%  correct=True
+2026-03-25 00:11:09  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.105 -j DROP
+2026-03-25 00:11:09  INFO      WINDOW 10  true=ATTACK  verdict=ATTACK  attack_pkts=20/20  avg_attack_prob=99.8%  correct=True
+2026-03-25 00:11:09  WARNING   BLOCKED   iptables -I INPUT -s 192.168.1.101 -j DROP
+2026-03-25 00:11:10  INFO      UNBLOCKED  192.168.1.103
+2026-03-25 00:11:10  INFO      UNBLOCKED  192.168.1.102
+2026-03-25 00:11:10  INFO      UNBLOCKED  192.168.1.104
+2026-03-25 00:11:10  INFO      UNBLOCKED  192.168.1.101
+2026-03-25 00:11:11  INFO      UNBLOCKED  192.168.1.105
+2026-03-25 00:11:11  INFO      ============================================================
+2026-03-25 00:11:11  INFO      SESSION END  windows=10/10 correct  ips_blocked=5  accuracy=99.71%  precision=99.80%  recall=99.51%  f1=99.65%
+2026-03-25 00:11:11  INFO      ============================================================
+2026-03-25 00:11:11  INFO      Log written to /media/sf_Project/ips_demo.log

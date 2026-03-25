@@ -59,7 +59,7 @@ ATTACKER_POOL = [
     "192.168.1.105",
 ]
 
-blocked_ips = set()  # type: set
+blocked_ips = set()
 
 
 # ── iptables helpers ────────────────────────────────────────────────────────
@@ -198,11 +198,44 @@ def full_test_metrics(X_test, y_test, model):
     tn = int(((preds == 0) & (y_test == 0)).sum())
     fp = int(((preds == 1) & (y_test == 0)).sum())
     fn = int(((preds == 0) & (y_test == 1)).sum())
-    accuracy  = (tp + tn) / len(y_test) * 100
     precision = tp / (tp + fp) * 100 if (tp + fp) else 0
     recall    = tp / (tp + fn) * 100 if (tp + fn) else 0
-    f1        = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
-    return accuracy, precision, recall, f1, tp, tn, fp, fn
+    return {
+        "accuracy":  (tp + tn) / len(y_test) * 100,
+        "precision": precision,
+        "recall":    recall,
+        "f1":        2 * precision * recall / (precision + recall) if (precision + recall) else 0,
+        "tp": tp, "tn": tn, "fp": fp, "fn": fn,
+    }
+
+
+# ── summary ─────────────────────────────────────────────────────────────────
+
+def print_summary(tally, m, n_packets):
+    tp, tn, fp, fn = m["tp"], m["tn"], m["fp"], m["fn"]
+    w = max(len(str(v)) for v in (tp, tn, fp, fn))
+    print()
+    print("=" * 70)
+    print(f"  {BOLD}Results{RESET}")
+    print("=" * 70)
+    print(f"  Windows correct  : {tally['correct']} / {tally['total']}")
+    print(f"  IPs blocked      : {len(blocked_ips)} unique attacker(s) identified")
+    print(f"  Log file         : {os.path.abspath(LOG_PATH)}")
+    print()
+    print("  Full test-set metrics:")
+    print(f"    Accuracy  : {m['accuracy']:.2f}%")
+    print(f"    Precision : {m['precision']:.2f}%")
+    print(f"    Recall    : {m['recall']:.2f}%")
+    print(f"    F1 Score  : {m['f1']:.2f}%")
+    print()
+    print(f"  Confusion matrix ({n_packets:,} packets):")
+    print()
+    print(f"                       Predicted")
+    print(f"                  {'NORMAL':<{w+4}}  {'ATTACK':<{w+4}}")
+    print(f"  Actual NORMAL   {GREEN}TN: {tn:<{w}}{RESET}  {RED}FP: {fp:<{w}}{RESET}  (correctly allowed / false alarms)")
+    print(f"  Actual ATTACK   {RED}FN: {fn:<{w}}{RESET}  {GREEN}TP: {tp:<{w}}{RESET}  (missed attacks  / correctly blocked)")
+    print("=" * 70)
+    print()
 
 
 # ── main ────────────────────────────────────────────────────────────────────
@@ -260,43 +293,19 @@ def main():
     if not completed:
         return
 
-    accuracy, precision, recall, f1, tp, tn, fp, fn = full_test_metrics(
-        X_test, y_test, model
-    )
-    w = max(len(str(tp)), len(str(fp)), len(str(fn)), len(str(tn)))
+    m = full_test_metrics(X_test, y_test, model)
 
     logging.info("=" * 60)
     logging.info(
         "SESSION END  windows=%d/%d correct  ips_blocked=%d  "
         "accuracy=%.2f%%  precision=%.2f%%  recall=%.2f%%  f1=%.2f%%",
         tally["correct"], tally["total"], len(blocked_ips),
-        accuracy, precision, recall, f1
+        m["accuracy"], m["precision"], m["recall"], m["f1"]
     )
     logging.info("=" * 60)
     logging.info("Log written to %s", os.path.abspath(LOG_PATH))
 
-    print()
-    print("=" * 70)
-    print(f"  {BOLD}Results{RESET}")
-    print("=" * 70)
-    print(f"  Windows correct  : {tally['correct']} / {tally['total']}")
-    print(f"  IPs blocked      : {len(blocked_ips)} unique attacker(s) identified")
-    print(f"  Log file         : {os.path.abspath(LOG_PATH)}")
-    print()
-    print("  Full test-set metrics:")
-    print(f"    Accuracy  : {accuracy:.2f}%")
-    print(f"    Precision : {precision:.2f}%")
-    print(f"    Recall    : {recall:.2f}%")
-    print(f"    F1 Score  : {f1:.2f}%")
-    print()
-    print(f"  Confusion matrix ({len(X_test):,} packets):")
-    print(f"")
-    print(f"                       Predicted")
-    print(f"                  {'NORMAL':<{w+4}}  {'ATTACK':<{w+4}}")
-    print(f"  Actual NORMAL   {GREEN}TN: {tn:<{w}}{RESET}  {RED}FP: {fp:<{w}}{RESET}  (correctly allowed / false alarms)")
-    print(f"  Actual ATTACK   {RED}FN: {fn:<{w}}{RESET}  {GREEN}TP: {tp:<{w}}{RESET}  (missed attacks  / correctly blocked)")
-    print("=" * 70)
-    print()
+    print_summary(tally, m, len(X_test))
 
 
 if __name__ == "__main__":
