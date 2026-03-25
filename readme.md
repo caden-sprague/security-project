@@ -28,11 +28,9 @@ The classifier uses 10 features selected in the paper: `frame.time_delta`, `tcp.
 
 | File | Description |
 |------|-------------|
-| `CreateRF.py` | Trains the Random Forest classifier and saves it to `rf_model.pkl` |
+| `createRF.py` | Trains the Random Forest classifier and saves it to `rf_model.pkl` |
 | `detect.py` | Extracts features from a pcap file and classifies traffic as NORMAL or ATTACK |
 | `demo_csv.py` | IPS demo using the held-out test split — classifies rolling windows and blocks attacker IPs via iptables |
-| `normal.py` | Simulates normal ICU sensor traffic via paho-mqtt |
-| `malicious.py` | Simulates a flood attack via paho-mqtt |
 | `requirements.txt` | Python dependencies |
 | `rf_model.pkl` | Saved trained model *(not committed — generate locally, see below)* |
 
@@ -54,7 +52,7 @@ sudo apt-get install tshark
 ### Train / Evaluate the Model
 
 ```bash
-python3 CreateRF.py
+python3 createRF.py
 ```
 
 Trains the Random Forest on the ICU dataset and evaluates it on the held-out test set, printing accuracy, precision, recall, F1-score, and the confusion matrix. The trained model is saved to `rf_model.pkl`.
@@ -62,16 +60,18 @@ Trains the Random Forest on the ICU dataset and evaluates it on the held-out tes
 ### Run the IPS Demo
 
 ```bash
-sudo python3 demo_csv.py [window_size] [n_windows]
+sudo python3 demo_csv.py [--debug]
 ```
 
 Classifies rolling windows of packets from the held-out test split. Normal traffic windows are shown first, then attack windows. Each detected attack triggers an `iptables` DROP rule for a simulated attacker IP. All actions are logged to `ips_demo.log`. Requires `sudo` for iptables.
 
-Defaults: 20 packets per window, 5 windows per class.
+Window size: 20 packets per window, 5 windows per class.
+
+Pass `--debug` to be prompted for confirmation before each iptables change.
 
 ## Model Details
 
 - Algorithm: Random Forest Classifier
 - Max depth: 10
-- Train/test split: 90% / 10% (`random_state=100`)
+- Train/test split: 70% / 30% (`random_state=100`)
 - Fixed random seed ensures fully reproducible results
