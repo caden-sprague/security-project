@@ -37,7 +37,6 @@ import logging
 import subprocess
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import joblib
 
@@ -107,44 +106,33 @@ def _unblock_all(blocked):
             pass
 
 
-# ── traffic generator ────────────────────────────────────────────────────────
+# ── traffic loader ───────────────────────────────────────────────────────────
+
+DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         "ICUDatasetProcessed", "Attack.csv")
 
 def generate(n, encoder):
     """
-    Return a DataFrame of n synthetic CoAP Replay packets.
+    Return n real CoAP Replay rows from Attack.csv.
 
-    CoAP runs over UDP (ip.proto=17). The tshark capture pipeline fills all
-    tcp.* and mqtt.* fields with 0 for UDP flows. This gives CoAP replay
-    traffic a very distinctive all-zero pattern across the MQTT/TCP feature
-    columns — completely unlike normal MQTT ICU traffic where tcp.flags.ack=1
-    and mqtt.msgtype ≥ 1 on every packet.
-
-    The attacker replays at irregular intervals to mimic legitimate environmental
-    sensor readings, which is why frame.time_delta spans a wider range (0.001–0.5 s)
-    compared to the MQTT flood.
+    Filter: mqtt.msgtype == 0 AND tcp.flags.ack == 0.
+    These 3,533 rows are actual UDP/CoAP packets captured during the CoAP
+    Replay attack. Because CoAP uses UDP (not TCP), the tshark capture fills
+    all tcp.* and mqtt.* fields with 0 — a pattern that never appears in
+    normal MQTT ICU traffic where tcp.flags.ack is always 1.
+    mqtt.hdrflags is re-encoded using the same LabelEncoder used during
+    model training.
     """
-    rng = np.random.default_rng(99)
+    df = pd.read_csv(DATA_PATH, low_memory=False).fillna(0)
 
-    # All CoAP packets have hdrflags='0' (no MQTT layer) → encoded index 0
-    classes     = list(encoder.classes_)
-    no_mqtt_hdr = classes.index("0") if "0" in classes else 0
+    coap = df[(df["mqtt.msgtype"] == 0) & (df["tcp.flags.ack"] == 0)].copy()
 
-    return pd.DataFrame({
-        # Replayed at irregular intervals mimicking normal sensor cadence
-        "frame.time_delta": rng.uniform(0.001, 0.5, n),
-        # UDP flow — tcp.time_delta is 0 (no TCP session tracking)
-        "tcp.time_delta":   np.zeros(n, dtype=float),
-        # UDP: no TCP flags at all
-        "tcp.flags.ack":    np.zeros(n, dtype=int),
-        "tcp.flags.push":   np.zeros(n, dtype=int),
-        "tcp.flags.reset":  np.zeros(n, dtype=int),
-        # No MQTT application layer
-        "mqtt.hdrflags":    np.full(n, no_mqtt_hdr, dtype=int),
-        "mqtt.msgtype":     np.zeros(n, dtype=int),
-        "mqtt.qos":         np.zeros(n, dtype=int),
-        "mqtt.retain":      np.zeros(n, dtype=int),
-        "mqtt.ver":         np.zeros(n, dtype=int),
-    })
+    coap = coap[FEATURES].copy()
+    coap["mqtt.hdrflags"] = encoder.transform(
+        coap["mqtt.hdrflags"].astype(str)
+    )
+
+    return coap.sample(n=n, replace=len(coap) < n, random_state=99).reset_index(drop=True)
 
 
 # ── demo runner ──────────────────────────────────────────────────────────────

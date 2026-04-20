@@ -30,7 +30,6 @@ import logging
 import subprocess
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import joblib
 
@@ -104,37 +103,33 @@ def _unblock_all(blocked):
             pass
 
 
-# ── traffic generator ────────────────────────────────────────────────────────
+# ── traffic loader ───────────────────────────────────────────────────────────
+
+DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         "ICUDatasetProcessed", "Attack.csv")
 
 def generate(n, encoder):
     """
-    Return a DataFrame of n synthetic MQTT Publish Flood packets.
+    Return n real MQTT Publish Flood rows from Attack.csv.
 
-    The attacker publishes as fast as possible (QoS 0, fire-and-forget).
-    frame.time_delta is orders of magnitude lower than normal ICU traffic
-    (normal mean ≈ 0.13 s; flood mean ≈ 0.001 s).
+    Filter: mqtt.msgtype == 3 (PUBLISH) AND frame.time_delta < 0.005 s.
+    These are actual captured packets from the IoT-Flock flood simulation —
+    25,917 matching rows exist in Attack.csv. mqtt.hdrflags is re-encoded
+    using the same LabelEncoder used during model training.
     """
-    rng = np.random.default_rng(42)
+    df = pd.read_csv(DATA_PATH, low_memory=False).fillna(0)
 
-    # Look up the encoded integer for PUBLISH QoS=0 (hdrflags = '0x00000030')
-    classes = list(encoder.classes_)
-    publish_hdr = classes.index("0x00000030") if "0x00000030" in classes else 0
+    # Keep only rows that match the Publish Flood signature
+    flood = df[(df["mqtt.msgtype"] == 3) & (df["frame.time_delta"] < 0.005)].copy()
 
-    return pd.DataFrame({
-        # Flood rate: ~500–10 000 packets/sec → delta 0.0001–0.002 s
-        "frame.time_delta": rng.uniform(0.0001, 0.002, n),
-        "tcp.time_delta":   rng.uniform(0.0001, 0.001, n),
-        # Established TCP connection: ACK=1, PSH=1, RST=0
-        "tcp.flags.ack":    np.ones(n, dtype=int),
-        "tcp.flags.push":   np.ones(n, dtype=int),
-        "tcp.flags.reset":  np.zeros(n, dtype=int),
-        # PUBLISH QoS=0 fixed header
-        "mqtt.hdrflags":    np.full(n, publish_hdr, dtype=int),
-        "mqtt.msgtype":     np.full(n, 3, dtype=int),   # 3 = PUBLISH
-        "mqtt.qos":         np.zeros(n, dtype=int),     # QoS 0 = no ACK
-        "mqtt.retain":      np.zeros(n, dtype=int),
-        "mqtt.ver":         np.zeros(n, dtype=int),     # no CONNECT in flood
-    })
+    # Select and encode the 10 model features
+    flood = flood[FEATURES].copy()
+    flood["mqtt.hdrflags"] = encoder.transform(
+        flood["mqtt.hdrflags"].astype(str)
+    )
+
+    # Sample n rows (with replacement if needed so any n works)
+    return flood.sample(n=n, replace=len(flood) < n, random_state=42).reset_index(drop=True)
 
 
 # ── demo runner ──────────────────────────────────────────────────────────────

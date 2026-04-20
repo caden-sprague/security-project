@@ -33,7 +33,6 @@ import logging
 import subprocess
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import joblib
 
@@ -103,49 +102,33 @@ def _unblock_all(blocked):
             pass
 
 
-# ── traffic generator ────────────────────────────────────────────────────────
+# ── traffic loader ───────────────────────────────────────────────────────────
+
+DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         "ICUDatasetProcessed", "Attack.csv")
 
 def generate(n, encoder):
     """
-    Return a DataFrame of n synthetic MQTT Packet Crafting packets.
+    Return n real MQTT Packet Crafting rows from Attack.csv.
 
-    The key distinguishing feature is tcp.flags.reset=1 on a significant
-    fraction of packets — the broker is actively resetting connections that
-    it receives malformed MQTT packets on. Normal ICU traffic has reset=0
-    on every single packet, making this a very strong attack indicator.
+    Filter: tcp.flags.reset == 1.
+    These 1,633 rows are the actual TCP RST packets produced when the MQTT
+    broker rejects the attacker's malformed CONNECT-less PUBLISH packets.
+    In normal ICU traffic tcp.flags.reset is 0 on every single packet, making
+    this the strongest single-feature attack indicator in the dataset.
+    mqtt.hdrflags is re-encoded using the same LabelEncoder used during
+    model training.
     """
-    rng = np.random.default_rng(13)
+    df = pd.read_csv(DATA_PATH, low_memory=False).fillna(0)
 
-    classes        = list(encoder.classes_)
-    # DUP PUBLISH QoS=1: hdrflags '0x0000003a' — malformed duplicate marker
-    dup_pub_hdr    = classes.index("0x0000003a") if "0x0000003a" in classes else 0
-    # Some packets are raw TCP (no MQTT layer): hdrflags '0'
-    no_mqtt_hdr    = classes.index("0") if "0" in classes else 0
+    craft = df[df["tcp.flags.reset"] == 1].copy()
 
-    # ~40 % of packets trigger a TCP RST (broker rejecting malformed frames)
-    has_rst        = rng.random(n) < 0.40
-    # ~60 % carry MQTT data (PUBLISH before CONNECT); 40 % are raw TCP frames
-    has_mqtt       = rng.random(n) > 0.40
+    craft = craft[FEATURES].copy()
+    craft["mqtt.hdrflags"] = encoder.transform(
+        craft["mqtt.hdrflags"].astype(str)
+    )
 
-    return pd.DataFrame({
-        # Fast retry loop after each RST: 0.0001–0.01 s
-        "frame.time_delta": rng.uniform(0.0001, 0.01, n),
-        "tcp.time_delta":   rng.uniform(0.0001, 0.05, n),
-        # RST packets break the normal ACK flow
-        "tcp.flags.ack":    (~has_rst).astype(int),
-        "tcp.flags.push":   np.where(has_mqtt & ~has_rst, 1, 0).astype(int),
-        # tcp.flags.reset=1 is the strongest single indicator of this attack
-        "tcp.flags.reset":  has_rst.astype(int),
-        # DUP PUBLISH on MQTT frames; raw '0' on non-MQTT frames
-        "mqtt.hdrflags":    np.where(has_mqtt, dup_pub_hdr, no_mqtt_hdr).astype(int),
-        # PUBLISH (3) on MQTT frames; 0 on raw TCP frames
-        "mqtt.msgtype":     np.where(has_mqtt, 3, 0).astype(int),
-        # QoS=1 used in the crafted packets
-        "mqtt.qos":         np.where(has_mqtt, 1, 0).astype(int),
-        "mqtt.retain":      np.zeros(n, dtype=int),
-        # No valid CONNECT was sent, so version = 0
-        "mqtt.ver":         np.zeros(n, dtype=int),
-    })
+    return craft.sample(n=n, replace=len(craft) < n, random_state=13).reset_index(drop=True)
 
 
 # ── demo runner ──────────────────────────────────────────────────────────────

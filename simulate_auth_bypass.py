@@ -32,7 +32,6 @@ import logging
 import subprocess
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import joblib
 
@@ -102,47 +101,31 @@ def _unblock_all(blocked):
             pass
 
 
-# ── traffic generator ────────────────────────────────────────────────────────
+# ── traffic loader ───────────────────────────────────────────────────────────
+
+DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         "ICUDatasetProcessed", "Attack.csv")
 
 def generate(n, encoder):
     """
-    Return a DataFrame of n synthetic MQTT Auth Bypass CONNECT packets.
+    Return n real MQTT Auth Bypass rows from Attack.csv.
 
-    Each attempt follows the pattern:
-      1. TCP SYN (ack=0, push=0)
-      2. TCP SYN-ACK / ACK (ack=1, push=0)
-      3. MQTT CONNECT with no password (ack=1, push=1, msgtype=1, ver=4)
-
-    We model the steady-state CONNECT flood: mostly ack=1, push=1.
-    A fraction (~30 %) are pure TCP setup frames (ack=0, push=0) to reflect
-    the repeated connection teardown-and-retry pattern.
+    Filter: mqtt.msgtype == 1 (CONNECT) AND mqtt.ver == 4 (MQTT 3.1.1).
+    These 1,851 rows are the actual captured CONNECT packets sent by the
+    attacker with the password field omitted — a real Auth Bypass attempt
+    recorded by IoT-Flock. mqtt.hdrflags is re-encoded using the same
+    LabelEncoder used during model training.
     """
-    rng = np.random.default_rng(7)
+    df = pd.read_csv(DATA_PATH, low_memory=False).fillna(0)
 
-    classes     = list(encoder.classes_)
-    connect_hdr = classes.index("0x00000010") if "0x00000010" in classes else 0
+    auth = df[(df["mqtt.msgtype"] == 1) & (df["mqtt.ver"] == 4)].copy()
 
-    # 70 % of frames carry the MQTT CONNECT payload; 30 % are TCP setup
-    is_payload = rng.random(n) > 0.30
+    auth = auth[FEATURES].copy()
+    auth["mqtt.hdrflags"] = encoder.transform(
+        auth["mqtt.hdrflags"].astype(str)
+    )
 
-    return pd.DataFrame({
-        # Slower than flood — each attempt needs a full TCP handshake
-        "frame.time_delta": rng.uniform(0.001, 0.1, n),
-        "tcp.time_delta":   rng.uniform(0.001, 0.5, n),
-        # TCP setup frames have ack=0; payload frames have ack=1
-        "tcp.flags.ack":    is_payload.astype(int),
-        "tcp.flags.push":   is_payload.astype(int),
-        # Broker does not reset — it either accepts or ignores the bypass attempt
-        "tcp.flags.reset":  np.zeros(n, dtype=int),
-        # CONNECT fixed header (encoded)
-        "mqtt.hdrflags":    np.where(is_payload, connect_hdr, 0).astype(int),
-        # msgtype=1 (CONNECT) only on payload frames; 0 on pure TCP frames
-        "mqtt.msgtype":     np.where(is_payload, 1, 0).astype(int),
-        "mqtt.qos":         np.zeros(n, dtype=int),
-        "mqtt.retain":      np.zeros(n, dtype=int),
-        # MQTT 3.1.1 protocol level = 4; 0 on non-CONNECT frames
-        "mqtt.ver":         np.where(is_payload, 4, 0).astype(int),
-    })
+    return auth.sample(n=n, replace=len(auth) < n, random_state=7).reset_index(drop=True)
 
 
 # ── demo runner ──────────────────────────────────────────────────────────────
