@@ -1,4 +1,7 @@
 .DS_Store
 rf_model.pkl
+svm_model.pkl
 __pycache__/
 *.pyc
+.claude/
+ips_demo.log
