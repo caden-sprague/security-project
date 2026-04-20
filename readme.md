@@ -75,3 +75,12 @@ Pass `--debug` to be prompted for confirmation before each iptables change.
 - Max depth: 10
 - Train/test split: 70% / 30% (`random_state=100`)
 - Fixed random seed ensures fully reproducible results
+
+## Additional Model Evaluation
+
+To extend the original implementation, we introduce a Support Vector Machine (SVM) model to compare against the baseline Random Forest classifier.
+
+- Model: Support Vector Machine (SVM)
+- File: models/svm_model.py
+- Uses the same dataset, feature set, and train/test split for fair comparison
+- Evaluates differences in detection performance for IoT intrusion prevention
