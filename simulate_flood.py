@@ -6,17 +6,14 @@ The MQTT Publish Flood is a DDoS attack at the application layer. The attacker
 floods the MQTT broker with PUBLISH messages at an extremely high rate,
 exhausting its resources and denying service to legitimate ICU medical devices.
 
-Attack signature (10-feature profile):
-  - frame.time_delta  : near zero (hundreds of packets per second)
-  - tcp.time_delta    : near zero (TCP pipeline flooded)
-  - tcp.flags.ack=1   : connection already established
-  - tcp.flags.push=1  : data pushed immediately, no wait
-  - tcp.flags.reset=0 : no resets — attacker stays connected
-  - mqtt.hdrflags=3   : PUBLISH, QoS 0, no retain (0x30 encoded)
-  - mqtt.msgtype=3    : PUBLISH control packet type
-  - mqtt.qos=0        : fire-and-forget — no PUBACK needed (maximises rate)
-  - mqtt.retain=0     : no retain flag
-  - mqtt.ver=0        : device already connected; not a new CONNECT packet
+Data source:
+    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+        mqtt.msgtype == 3 (PUBLISH)  AND  frame.time_delta < 0.005 s
+    This yields 25,917 rows — actual traffic captured by IoT-Flock during the
+    flood simulation. The filter identifies flood packets because legitimate ICU
+    devices publish at 2–10 second intervals (frame.time_delta ≈ 0.13 s on
+    average), while the flood attacker sends hundreds of PUBLISH messages per
+    second (frame.time_delta ≈ 0.001 s).
 
 Usage:
     python simulate_flood.py

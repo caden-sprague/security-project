@@ -9,17 +9,15 @@ request, violating the MQTT protocol state machine. The broker rejects these
 with TCP RST (reset) frames. In large volumes, this can cause denial-of-service
 or expose memory-corruption vulnerabilities in the broker.
 
-Attack signature (10-feature profile):
-  - frame.time_delta  : 0.0001–0.01 s (rapid crafted-packet bursts)
-  - tcp.time_delta    : 0.0001–0.05 s (fast retries after RST)
-  - tcp.flags.ack     : mix of 0/1 (resets interrupt the ACK sequence)
-  - tcp.flags.push    : mix of 0/1 (malformed data pushes)
-  - tcp.flags.reset=1 : HIGH (broker/server resets malformed connections)
-  - mqtt.hdrflags=6   : DUP PUBLISH QoS=1 (0x3a — malformed duplicate flag)
-  - mqtt.msgtype      : mix of 0 (raw TCP/malformed) and 3 (PUBLISH before CONNECT)
-  - mqtt.qos=1        : QoS=1 used in crafted packets (unexpected for pre-CONNECT)
-  - mqtt.retain=0
-  - mqtt.ver=0        : no valid CONNECT sent, so version field is 0
+Data source:
+    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+        tcp.flags.reset == 1
+    This yields 1,633 rows — actual TCP RST packets captured by IoT-Flock
+    when the broker rejected the attacker's malformed packets. This filter
+    is highly reliable: in the entire normal traffic dataset (108,568 rows of
+    patient and environmental monitoring), tcp.flags.reset is 0 on every
+    single packet. A reset flag appearing in ICU traffic is an unambiguous
+    sign of malicious activity.
 
 Usage:
     python simulate_packet_crafting.py

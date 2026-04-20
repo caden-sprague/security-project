@@ -15,43 +15,19 @@ IoT-specific datasets and ML classifiers to detect malicious MQTT/CoAP traffic.
 Our contribution transforms that passive detection system into an active
 **Intrusion Prevention System (IPS)** with per-attack simulators.
 
-**Our extension** — each team member implements a synthetic attack simulator
-for one of the four attack types studied in the paper, all feeding into a single
-shared Random Forest classifier. When an attack window is detected, the system
+**Our extension** — each team member takes one of the four attack types from
+the paper and isolates its real captured rows from `Attack.csv` using a
+network-signature filter. These rows are fed into the shared Random Forest
+classifier in rolling windows. When an attack window is detected, the system
 automatically inserts a DROP rule via `iptables` for the attacker's IP.
 
-| Team Member | Attack Simulated | Script |
-|-------------|-----------------|--------|
-| Aleena Tomy | MQTT Publish Flood | `simulate_flood.py` |
-| Caden Sprague | MQTT Authentication Bypass | `simulate_auth_bypass.py` |
-| Devin Schupbach | MQTT Packet Crafting | `simulate_packet_crafting.py` |
-| Widyane Kasbi | CoAP Replay | `simulate_coap_replay.py` |
+| Team Member | Attack | Filter applied to Attack.csv | Rows |
+|-------------|--------|------------------------------|------|
+| Aleena Tomy | MQTT Publish Flood | `mqtt.msgtype==3` AND `frame.time_delta<0.005` | 25,917 |
+| Caden Sprague | MQTT Auth Bypass | `mqtt.msgtype==1` AND `mqtt.ver==4` | 1,851 |
+| Devin Schupbach | MQTT Packet Crafting | `tcp.flags.reset==1` | 1,633 |
+| Widyane Kasbi | CoAP Replay | `mqtt.msgtype==0` AND `tcp.flags.ack==0` | 3,533 |
 
----
-
-## References
-
-### Prior / Foundational Work
-> N. Koroniotis, N. Moustafa, E. Sitnikova, and B. Turnbull,
-> "Towards Developing Network Forensic Mechanism for Botnet Activities
-> in the IoT Based on Machine Learning Techniques,"
-> *Mobile Networks and Applications*, vol. 24, pp. 1122–1135, 2019.
-> https://doi.org/10.1007/s11036-018-1103-2
-
-The Bot-IoT dataset introduced by this paper established the methodology of
-generating labelled IoT attack traffic in a controlled testbed — the same
-approach used in the paper we studied with IoT-Flock and the ICU scenario.
-
-### Contemporary Work Building on This Paper
-> A. Alsaedi, N. Moustafa, Z. Tari, A. Mahmood, and A. Ansari,
-> "TON_IoT Telemetry Dataset: A New Generation Dataset of IoT and IIoT
-> for Data-Driven Intrusion Detection Systems,"
-> *IEEE Access*, vol. 8, pp. 165130–165150, 2020.
-> https://doi.org/10.1109/ACCESS.2020.3022420
-
-This work extends the IoT IDS dataset landscape by incorporating heterogeneous
-telemetry (operating system, network, and IoT layers), building on the
-application-layer feature extraction approach pioneered in the paper we studied.
 
 ---
 
@@ -221,9 +197,12 @@ performance against the Random Forest.
   terminate the existing TCP connection. A full implementation would also send
   a TCP RST to the attacker (`iptables -I OUTPUT -d <ip> -j REJECT
   --reject-with tcp-reset`). This is left as future work.
-- **Per-attack-type labels** — `Attack.csv` uses a single "Attack" class; the
-  model does binary classification (normal vs. attack), not attack-type
-  identification; the four simulators demonstrate each attack's feature profile
+- **Per-attack-type labels in the dataset** — `Attack.csv` has no column
+  identifying which attack type each row belongs to; all 80,126 rows carry the
+  same `class=Attack` label. The four simulators separate attack types by
+  applying network-signature filters (e.g. `tcp.flags.reset==1` for Packet
+  Crafting), but the model itself still does binary classification only
+  (normal vs. attack) — it does not identify the specific attack type
 - **SVM on full dataset** — training would exceed an hour; the script uses a
   20 % stratified sample
 

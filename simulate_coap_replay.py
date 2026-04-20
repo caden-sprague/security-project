@@ -13,17 +13,14 @@ cause the environmental control unit to act on stale or falsified sensor data
 This attack is particularly dangerous because CoAP is stateless and UDP-based,
 making it harder to detect with traditional TCP-based intrusion detection.
 
-Attack signature (10-feature profile):
-  - frame.time_delta  : 0.001–0.5 s (replayed at varying intervals)
-  - tcp.time_delta    : 0.0  (UDP — no TCP; this field is 0 for non-TCP flows)
-  - tcp.flags.ack=0   : UDP has no TCP ACK handshake
-  - tcp.flags.push=0  : UDP has no TCP PSH flag
-  - tcp.flags.reset=0 : UDP has no TCP RST
-  - mqtt.hdrflags=0   : no MQTT layer — CoAP uses its own binary header
-  - mqtt.msgtype=0    : no MQTT message type (CoAP packets)
-  - mqtt.qos=0        : no QoS (CoAP uses its own reliability model)
-  - mqtt.retain=0
-  - mqtt.ver=0        : no MQTT version
+Data source:
+    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+        mqtt.msgtype == 0  AND  tcp.flags.ack == 0
+    This yields 3,533 rows — actual UDP/CoAP packets captured by IoT-Flock
+    during the replay simulation. Because CoAP runs over UDP (not TCP), the
+    tshark capture fills all tcp.* and mqtt.* fields with 0. This all-zero
+    pattern never appears in normal MQTT ICU traffic, where tcp.flags.ack
+    is 1 on every single packet.
 
 Usage:
     python simulate_coap_replay.py

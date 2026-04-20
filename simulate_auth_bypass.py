@@ -8,17 +8,14 @@ supplying a valid username) is still accepted. The attacker sends a stream of
 unauthenticated CONNECT requests, gaining unauthorised broker access and
 potentially injecting or reading medical sensor data.
 
-Attack signature (10-feature profile):
-  - frame.time_delta  : 0.001–0.1 s (new TCP+MQTT handshake per attempt)
-  - tcp.time_delta    : 0.001–0.5 s  (SYN-ACK roundtrip latency)
-  - tcp.flags.ack     : alternates 0/1 (0 = SYN, 1 = established)
-  - tcp.flags.push    : alternates 0/1 (0 = TCP setup, 1 = CONNECT payload)
-  - tcp.flags.reset   : 0 (broker accepts or ignores, does not reset)
-  - mqtt.hdrflags=1   : CONNECT fixed header (0x10 encoded)
-  - mqtt.msgtype=1    : CONNECT control packet type
-  - mqtt.qos=0        : CONNECT packets always QoS 0
-  - mqtt.retain=0     : no retain flag on CONNECT
-  - mqtt.ver=4        : MQTT 3.1.1 (protocol level 4) — used by attacker
+Data source:
+    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+        mqtt.msgtype == 1 (CONNECT)  AND  mqtt.ver == 4 (MQTT 3.1.1)
+    This yields 1,851 rows — actual CONNECT packets captured by IoT-Flock
+    during the auth bypass simulation. The filter identifies these packets
+    because the attacker uses MQTT 3.1.1 (protocol level 4) and sends
+    CONNECT requests without a valid password field, which appears as
+    mqtt.msgtype=1 with mqtt.ver=4 in the captured traffic.
 
 Usage:
     python simulate_auth_bypass.py
