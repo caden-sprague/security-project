@@ -10,14 +10,14 @@ with TCP RST (reset) frames. In large volumes, this can cause denial-of-service
 or expose memory-corruption vulnerabilities in the broker.
 
 Data source:
-    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+    Rows from the held-out test split (X_test, 30% of the dataset, never seen
+    during training), filtered to attack rows where:
         tcp.flags.reset == 1
-    This yields 1,633 rows — actual TCP RST packets captured by IoT-Flock
-    when the broker rejected the attacker's malformed packets. This filter
-    is highly reliable: in the entire normal traffic dataset (108,568 rows of
-    patient and environmental monitoring), tcp.flags.reset is 0 on every
-    single packet. A reset flag appearing in ICU traffic is an unambiguous
-    sign of malicious activity.
+    ~472 matching rows exist in the test split. This filter is highly reliable:
+    in the entire normal traffic dataset (108,568 rows of patient and
+    environmental monitoring), tcp.flags.reset is 0 on every single packet.
+    A reset flag appearing in ICU traffic is an unambiguous sign of malicious
+    activity.
 
 Usage:
     python simulate_packet_crafting.py

@@ -9,11 +9,11 @@ unauthenticated CONNECT requests, gaining unauthorised broker access and
 potentially injecting or reading medical sensor data.
 
 Data source:
-    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+    Rows from the held-out test split (X_test, 30% of the dataset, never seen
+    during training), filtered to attack rows where:
         mqtt.msgtype == 1 (CONNECT)  AND  mqtt.ver == 4 (MQTT 3.1.1)
-    This yields 1,851 rows — actual CONNECT packets captured by IoT-Flock
-    during the auth bypass simulation. The filter identifies these packets
-    because the attacker uses MQTT 3.1.1 (protocol level 4) and sends
+    ~557 matching rows exist in the test split. The filter identifies these
+    packets because the attacker uses MQTT 3.1.1 (protocol level 4) and sends
     CONNECT requests without a valid password field, which appears as
     mqtt.msgtype=1 with mqtt.ver=4 in the captured traffic.
 

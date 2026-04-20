@@ -7,13 +7,13 @@ floods the MQTT broker with PUBLISH messages at an extremely high rate,
 exhausting its resources and denying service to legitimate ICU medical devices.
 
 Data source:
-    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+    Rows from the held-out test split (X_test, 30% of the dataset, never seen
+    during training), filtered to attack rows where:
         mqtt.msgtype == 3 (PUBLISH)  AND  frame.time_delta < 0.005 s
-    This yields 25,917 rows — actual traffic captured by IoT-Flock during the
-    flood simulation. The filter identifies flood packets because legitimate ICU
-    devices publish at 2–10 second intervals (frame.time_delta ≈ 0.13 s on
-    average), while the flood attacker sends hundreds of PUBLISH messages per
-    second (frame.time_delta ≈ 0.001 s).
+    ~7,693 matching rows exist in the test split. The filter identifies flood
+    packets because legitimate ICU devices publish at 2–10 second intervals
+    (frame.time_delta ≈ 0.13 s on average), while the flood attacker sends
+    hundreds of PUBLISH messages per second (frame.time_delta ≈ 0.001 s).
 
 Usage:
     python simulate_flood.py

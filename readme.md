@@ -16,17 +16,18 @@ Our contribution transforms that passive detection system into an active
 **Intrusion Prevention System (IPS)** with per-attack simulators.
 
 **Our extension** — each team member takes one of the four attack types from
-the paper and isolates its real captured rows from `Attack.csv` using a
-network-signature filter. These rows are fed into the shared Random Forest
+the paper and isolates its rows from the held-out test split (`X_test`) using
+a network-signature filter. Using `X_test` guarantees the model has never seen
+these rows during training. The rows are fed into the shared Random Forest
 classifier in rolling windows. When an attack window is detected, the system
 automatically inserts a DROP rule via `iptables` for the attacker's IP.
 
-| Team Member | Attack | Filter applied to Attack.csv | Rows |
-|-------------|--------|------------------------------|------|
-| Aleena Tomy | MQTT Publish Flood | `mqtt.msgtype==3` AND `frame.time_delta<0.005` | 25,917 |
-| Caden Sprague | MQTT Auth Bypass | `mqtt.msgtype==1` AND `mqtt.ver==4` | 1,851 |
-| Devin Schupbach | MQTT Packet Crafting | `tcp.flags.reset==1` | 1,633 |
-| Widyane Kasbi | CoAP Replay | `mqtt.msgtype==0` AND `tcp.flags.ack==0` | 3,533 |
+| Team Member | Attack | Filter on held-out test set | Test-set rows |
+|-------------|--------|-----------------------------|---------------|
+| Aleena Tomy | MQTT Publish Flood | `mqtt.msgtype==3` AND `frame.time_delta<0.005` | 7,693 |
+| Caden Sprague | MQTT Auth Bypass | `mqtt.msgtype==1` AND `mqtt.ver==4` | 557 |
+| Devin Schupbach | MQTT Packet Crafting | `tcp.flags.reset==1` | 472 |
+| Widyane Kasbi | CoAP Replay | `mqtt.msgtype==0` AND `tcp.flags.ack==0` | 1,007 |
 
 
 ---
@@ -189,7 +190,7 @@ performance against the Random Forest.
 ## What Does Not Work
 
 - **Live packet capture** — there is no real-time pcap → feature pipeline; all
-  classification uses pre-recorded dataset rows or synthetic feature vectors
+  classification uses pre-recorded dataset rows from the held-out test split
 - **iptables on Windows/macOS** — actual DROP rules require Linux + root; on
   Windows the IPS prints the intended command instead of executing it
 - **TCP connection termination** — the IPS inserts a DROP rule that silently

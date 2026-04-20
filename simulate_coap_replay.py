@@ -14,13 +14,13 @@ This attack is particularly dangerous because CoAP is stateless and UDP-based,
 making it harder to detect with traditional TCP-based intrusion detection.
 
 Data source:
-    Real packets from ICUDatasetProcessed/Attack.csv, filtered to rows where:
+    Rows from the held-out test split (X_test, 30% of the dataset, never seen
+    during training), filtered to attack rows where:
         mqtt.msgtype == 0  AND  tcp.flags.ack == 0
-    This yields 3,533 rows — actual UDP/CoAP packets captured by IoT-Flock
-    during the replay simulation. Because CoAP runs over UDP (not TCP), the
-    tshark capture fills all tcp.* and mqtt.* fields with 0. This all-zero
-    pattern never appears in normal MQTT ICU traffic, where tcp.flags.ack
-    is 1 on every single packet.
+    ~1,007 matching rows exist in the test split. Because CoAP runs over UDP
+    (not TCP), the tshark capture fills all tcp.* and mqtt.* fields with 0.
+    This all-zero pattern never appears in normal MQTT ICU traffic, where
+    tcp.flags.ack is 1 on every single packet.
 
 Usage:
     python simulate_coap_replay.py
