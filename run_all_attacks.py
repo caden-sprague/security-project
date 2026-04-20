@@ -232,6 +232,8 @@ def main():
         result = attack_fn(
             model=model,
             encoder=encoder,
+            X_test=X_test,
+            y_test=y_test,
             standalone=False,
             n_windows=n_windows,
             window_size=window_size,

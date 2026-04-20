@@ -102,43 +102,37 @@ def _unblock_all(blocked):
 
 # ── traffic loader ───────────────────────────────────────────────────────────
 
-DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         "ICUDatasetProcessed", "Attack.csv")
-
-def generate(n, encoder):
+def generate(n, encoder, X_test, y_test):
     """
-    Return n real MQTT Publish Flood rows from Attack.csv.
+    Return n real MQTT Publish Flood rows from the held-out test set.
 
-    Filter: mqtt.msgtype == 3 (PUBLISH) AND frame.time_delta < 0.005 s.
-    These are actual captured packets from the IoT-Flock flood simulation —
-    25,917 matching rows exist in Attack.csv. mqtt.hdrflags is re-encoded
-    using the same LabelEncoder used during model training.
+    Source: X_test rows (never seen during training) where:
+        mqtt.msgtype == 3 (PUBLISH)  AND  frame.time_delta < 0.005 s
+    The test set contains ~7,693 flood rows. Using X_test guarantees no
+    overlap with the training data, so classification results reflect true
+    generalization, not memorization.
     """
-    df = pd.read_csv(DATA_PATH, low_memory=False).fillna(0)
-
-    # Keep only rows that match the Publish Flood signature
-    flood = df[(df["mqtt.msgtype"] == 3) & (df["frame.time_delta"] < 0.005)].copy()
-
-    # Select and encode the 10 model features
-    flood = flood[FEATURES].copy()
-    flood["mqtt.hdrflags"] = encoder.transform(
-        flood["mqtt.hdrflags"].astype(str)
-    )
-
-    # Sample n rows (with replacement if needed so any n works)
+    # Only use attack rows from the 30% held-out test split
+    attack_test = X_test[y_test == 1].reset_index(drop=True)
+    flood = attack_test[
+        (attack_test["mqtt.msgtype"] == 3) &
+        (attack_test["frame.time_delta"] < 0.005)
+    ]
     return flood.sample(n=n, replace=len(flood) < n, random_state=42).reset_index(drop=True)
 
 
 # ── demo runner ──────────────────────────────────────────────────────────────
 
-def run(model=None, encoder=None, standalone=True,
-        n_windows=None, window_size=None):
+def run(model=None, encoder=None, X_test=None, y_test=None,
+        standalone=True, n_windows=None, window_size=None):
     """
-    Classify rolling windows of simulated flood traffic and trigger IPS.
+    Classify rolling windows of held-out flood traffic and trigger IPS.
 
     Args:
         model      : pre-loaded RandomForestClassifier (loaded from disk if None)
         encoder    : pre-loaded LabelEncoder for mqtt.hdrflags
+        X_test     : held-out feature matrix (loaded from disk if None)
+        y_test     : held-out labels (loaded from disk if None)
         standalone : print header/footer when True; suppress when called from
                      run_all_attacks.py
         n_windows  : number of windows to evaluate (default: CLI arg or 5)
@@ -158,11 +152,13 @@ def run(model=None, encoder=None, standalone=True,
         saved   = joblib.load(MODEL_PATH)
         model   = saved["model"]
         encoder = saved["hdrflags_encoder"]
+        X_test  = saved["X_test"]
+        y_test  = saved["y_test"]
 
     attack_col = list(model.classes_).index(1)
     blocked    = set()
 
-    traffic = generate(n_windows * window_size, encoder)
+    traffic = generate(n_windows * window_size, encoder, X_test, y_test)
 
     if standalone:
         print()

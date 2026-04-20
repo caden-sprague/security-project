@@ -102,39 +102,28 @@ def _unblock_all(blocked):
 
 # ── traffic loader ───────────────────────────────────────────────────────────
 
-DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         "ICUDatasetProcessed", "Attack.csv")
-
-def generate(n, encoder):
+def generate(n, encoder, X_test, y_test):
     """
-    Return n real MQTT Packet Crafting rows from Attack.csv.
+    Return n real MQTT Packet Crafting rows from the held-out test set.
 
-    Filter: tcp.flags.reset == 1.
-    These 1,633 rows are the actual TCP RST packets produced when the MQTT
-    broker rejects the attacker's malformed CONNECT-less PUBLISH packets.
-    In normal ICU traffic tcp.flags.reset is 0 on every single packet, making
-    this the strongest single-feature attack indicator in the dataset.
-    mqtt.hdrflags is re-encoded using the same LabelEncoder used during
-    model training.
+    Source: X_test rows (never seen during training) where:
+        tcp.flags.reset == 1
+    The test set contains ~472 packet crafting rows. Using X_test guarantees
+    no overlap with the training data. tcp.flags.reset is 0 on every single
+    row of normal ICU traffic, making this the strongest single-feature
+    attack indicator in the dataset.
     """
-    df = pd.read_csv(DATA_PATH, low_memory=False).fillna(0)
-
-    craft = df[df["tcp.flags.reset"] == 1].copy()
-
-    craft = craft[FEATURES].copy()
-    craft["mqtt.hdrflags"] = encoder.transform(
-        craft["mqtt.hdrflags"].astype(str)
-    )
-
+    attack_test = X_test[y_test == 1].reset_index(drop=True)
+    craft = attack_test[attack_test["tcp.flags.reset"] == 1]
     return craft.sample(n=n, replace=len(craft) < n, random_state=13).reset_index(drop=True)
 
 
 # ── demo runner ──────────────────────────────────────────────────────────────
 
-def run(model=None, encoder=None, standalone=True,
-        n_windows=None, window_size=None):
+def run(model=None, encoder=None, X_test=None, y_test=None,
+        standalone=True, n_windows=None, window_size=None):
     """
-    Classify rolling windows of simulated packet crafting traffic and trigger IPS.
+    Classify rolling windows of held-out packet crafting traffic and trigger IPS.
 
     Returns:
         dict with attack_name, windows_correct, windows_total, n_blocked
@@ -150,11 +139,13 @@ def run(model=None, encoder=None, standalone=True,
         saved   = joblib.load(MODEL_PATH)
         model   = saved["model"]
         encoder = saved["hdrflags_encoder"]
+        X_test  = saved["X_test"]
+        y_test  = saved["y_test"]
 
     attack_col = list(model.classes_).index(1)
     blocked    = set()
 
-    traffic = generate(n_windows * window_size, encoder)
+    traffic = generate(n_windows * window_size, encoder, X_test, y_test)
 
     if standalone:
         print()
