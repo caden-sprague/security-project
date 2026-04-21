@@ -1,26 +1,38 @@
 """
-CoAP Replay Attack Simulator
+MQTT Distributed Denial-of-Service Simulator (TCP SYN Flood)
 Attacker: Widyane Kasbi
 
-The CoAP Replay attack targets CoAP (Constrained Application Protocol), the
-UDP-based IoT protocol used by environmental sensors in the ICU (CO sensor,
-fire sensor, smoke detector, etc.). The attacker scans the network to intercept
-legitimate CoAP messages, then replays them — or injects modified payloads with
-spoofed source IPs — to the CoAP server. In a healthcare context, this could
-cause the environmental control unit to act on stale or falsified sensor data
-(e.g., wrong CO or temperature readings).
+The MQTT DDoS attack is a TCP SYN Flood targeting the MQTT broker on port 1883.
+The attacker (192.168.1.90 in the dataset) sends a rapid stream of TCP SYN
+connection-request packets to the broker without ever completing the three-way
+handshake. Each half-open connection consumes a slot in the broker's connection
+table. Under sufficient volume, the broker cannot accept new connections from
+legitimate ICU devices.
 
-This attack is particularly dangerous because CoAP is stateless and UDP-based,
-making it harder to detect with traditional TCP-based intrusion detection.
+This matches the "MQTT distributed denial-of-service" attack named in the
+paper's Section 3.2.2 introduction paragraph (Faour et al., Sensors 2021).
+
+Note on dataset:
+    The paper also describes a CoAP Replay attack. However, after inspecting
+    the full Attack.csv (80,126 rows), every row has ip.proto == 6 (TCP).
+    There are zero UDP packets in the dataset. CoAP runs over UDP (ip.proto 17),
+    so CoAP Replay traffic does not exist in the captured data. The SYN flood
+    rows represent the DDoS component of the attack traffic.
 
 Data source:
     Rows from the held-out test split (X_test, 30% of the dataset, never seen
     during training), filtered to attack rows where:
-        mqtt.msgtype == 0  AND  tcp.flags.ack == 0
-    ~1,007 matching rows exist in the test split. Because CoAP runs over UDP
-    (not TCP), the tshark capture fills all tcp.* and mqtt.* fields with 0.
-    This all-zero pattern never appears in normal MQTT ICU traffic, where
-    tcp.flags.ack is 1 on every single packet.
+        mqtt.msgtype == 0  AND  tcp.flags.ack == 0  AND  tcp.flags.reset == 0
+    ~549 matching rows exist in the test split. These are TCP SYN packets with
+    no MQTT payload (msgtype 0), no ACK flag (handshake never completed), and
+    no RST flag (distinguishing them from packet-crafting resets). This pattern
+    is absent from all 108,568 normal traffic rows.
+
+    Note: tcp.flags.syn is not among the 10 model features, so the filter uses
+    the three available flags above as a proxy. In the full Attack.csv (where
+    tcp.flags.syn is present), applying tcp.flags.syn==1 AND tcp.flags.ack==0
+    yields 1,941 rows, all confirmed from the attacker subnet (192.168.1.90)
+    or the ICU device at 10.16.120.44.
 
 Usage:
     python simulate_coap_replay.py
@@ -107,21 +119,24 @@ def _unblock_all(blocked):
 
 def generate(n, encoder, X_test, y_test):
     """
-    Return n real CoAP Replay rows from the held-out test set.
+    Return n real MQTT DDoS (TCP SYN Flood) rows from the held-out test set.
 
     Source: X_test rows (never seen during training) where:
-        mqtt.msgtype == 0  AND  tcp.flags.ack == 0
-    The test set contains ~1,007 CoAP replay rows. Using X_test guarantees
-    no overlap with the training data. Because CoAP uses UDP (not TCP), the
-    tshark capture fills all tcp.* and mqtt.* fields with 0 — a pattern that
-    never appears in normal MQTT ICU traffic where tcp.flags.ack is always 1.
+        mqtt.msgtype == 0  AND  tcp.flags.ack == 0  AND  tcp.flags.reset == 0
+    The test set contains ~549 matching rows. These are TCP SYN packets with
+    no MQTT payload, no ACK (handshake never completed), and no RST flag.
+    tcp.flags.syn is not among the 10 model features so this three-flag
+    combination is the closest available proxy within the feature set.
+    Zero overlap with the other three attack filters. Zero false positives
+    on the 108,568 normal traffic rows.
     """
     attack_test = X_test[y_test == 1].reset_index(drop=True)
-    coap = attack_test[
+    ddos = attack_test[
         (attack_test["mqtt.msgtype"] == 0) &
-        (attack_test["tcp.flags.ack"] == 0)
+        (attack_test["tcp.flags.ack"] == 0) &
+        (attack_test["tcp.flags.reset"] == 0)
     ]
-    return coap.sample(n=n, replace=len(coap) < n, random_state=99).reset_index(drop=True)
+    return ddos.sample(n=n, replace=len(ddos) < n, random_state=99).reset_index(drop=True)
 
 
 # ── demo runner ──────────────────────────────────────────────────────────────
@@ -156,15 +171,15 @@ def run(model=None, encoder=None, X_test=None, y_test=None,
     if standalone:
         print()
         print("=" * 70)
-        print(f"  {BOLD}CoAP Replay — Attack Simulation{RESET}")
+        print(f"  {BOLD}MQTT DDoS (TCP SYN Flood) -- Attack Simulation{RESET}")
         print(f"  Attacker : Widyane Kasbi  |  Simulated IP: {ATTACKER_IP}")
         print("=" * 70)
-        print(f"  {n_windows * window_size} CoAP UDP packets  "
-              f"({n_windows} windows × {window_size} packets/window)")
-        print(f"  Each packet: UDP/CoAP, all MQTT/TCP fields = 0")
+        print(f"  {n_windows * window_size} TCP SYN packets  "
+              f"({n_windows} windows x {window_size} packets/window)")
+        print(f"  Each packet: SYN to port 1883, no MQTT payload, handshake never completed")
         print()
 
-    logging.info("=== CoAP Replay simulation start — %d windows ===", n_windows)
+    logging.info("=== MQTT DDoS (TCP SYN Flood) simulation start -- %d windows ===", n_windows)
 
     tally = {"correct": 0, "total": 0}
 
@@ -193,7 +208,7 @@ def run(model=None, encoder=None, X_test=None, y_test=None,
               f"{outcome}")
 
         logging.info(
-            "COAP W%02d  verdict=%s  attack_pkts=%d/%d  prob=%.1f%%  correct=%s",
+            "DDOS W%02d  verdict=%s  attack_pkts=%d/%d  prob=%.1f%%  correct=%s",
             i + 1, verdict, int(preds.sum()), window_size, mean_prob, correct,
         )
 
@@ -209,9 +224,9 @@ def run(model=None, encoder=None, X_test=None, y_test=None,
         print("=" * 70)
         _unblock_all(blocked)
 
-    logging.info("=== CoAP Replay simulation end ===")
+    logging.info("=== MQTT DDoS (TCP SYN Flood) simulation end ===")
     return {
-        "attack_name":     "CoAP Replay",
+        "attack_name":     "MQTT DDoS (TCP SYN Flood)",
         "windows_correct": tally["correct"],
         "windows_total":   tally["total"],
         "n_blocked":       len(blocked),

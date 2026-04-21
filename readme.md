@@ -27,7 +27,7 @@ automatically inserts a DROP rule via `iptables` for the attacker's IP.
 | Aleena Tomy | MQTT Publish Flood | `mqtt.msgtype==3` AND `frame.time_delta<0.005` | 7,693 |
 | Caden Sprague | MQTT Auth Bypass | `mqtt.msgtype==1` AND `mqtt.ver==4` | 557 |
 | Devin Schupbach | MQTT Packet Crafting | `tcp.flags.reset==1` | 472 |
-| Widyane Kasbi | CoAP Replay | `mqtt.msgtype==0` AND `tcp.flags.ack==0` | 1,007 |
+| Widyane Kasbi | MQTT DDoS (TCP SYN Flood) | `mqtt.msgtype==0` AND `tcp.flags.ack==0` AND `tcp.flags.reset==0` | 549 |
 
 
 ---
@@ -51,6 +51,27 @@ feature importance: `frame.time_delta`, `tcp.time_delta`, `tcp.flags.ack`,
 
 The dataset is pre-included in the repository so results can be reproduced
 without any external download.
+
+**How attack-type filters were chosen:**
+
+`Attack.csv` carries a single `class=Attack` label on all 80,126 rows — there
+are no per-attack-type sub-labels. To give each team member a distinct attack to
+simulate, we inspected the raw packet fields and derived filters from MQTT/TCP
+protocol behaviour, then verified each filter against the actual data:
+
+| Attack | Filter | Basis | Verified against data |
+|--------|--------|--------|----------------------|
+| Publish Flood | `mqtt.msgtype==3 AND frame.time_delta<0.005` | PUBLISH (type 3) at flood rate; normal ICU devices publish at ~0.13 s intervals | 25,917 rows in Attack.csv; 0 false positives in normal traffic using pre-labelled test split |
+| Auth Bypass | `mqtt.msgtype==1 AND mqtt.ver==4` | CONNECT (type 1) with MQTT 3.1.1 (protocol level 4) | 1,851 rows in Attack.csv; 0 overlap with other filters |
+| Packet Crafting | `tcp.flags.reset==1` | RST packets sent by attacker IP 192.168.1.90 to broker port 1883; `tcp.flags.reset` is 0 on every normal traffic row | 1,633 rows in Attack.csv; 0 false positives in normal traffic |
+| MQTT DDoS | `mqtt.msgtype==0 AND tcp.flags.ack==0 AND tcp.flags.reset==0` | TCP SYN packets to port 1883 with no MQTT payload and no completed handshake; `tcp.flags.syn` is not in the 10 model features so these three flags serve as proxy | 549 rows in test split; 1,941 in full Attack.csv when filtering on `tcp.flags.syn==1 AND tcp.flags.ack==0`; 0 false positives in normal traffic |
+
+**Note on CoAP:** The paper describes a CoAP Replay attack. After inspecting the
+full Attack.csv, every row has `ip.proto == 6` (TCP) — there are zero UDP
+packets. CoAP runs over UDP (`ip.proto 17`), so CoAP Replay traffic is not
+present in the captured dataset. The DDoS TCP SYN flood rows correspond to the
+"MQTT distributed denial-of-service" attack named in the paper's Section 3.2.2
+introduction paragraph.
 
 **On false positives:** The model achieves a false positive rate of 0.15 %
 on the held-out test set: only 49 out of 32,620 normal packets were
@@ -80,7 +101,7 @@ Two design decisions keep false positives low:
 | `simulate_flood.py` | MQTT Publish Flood simulator (Aleena) |
 | `simulate_auth_bypass.py` | MQTT Auth Bypass simulator (Caden) |
 | `simulate_packet_crafting.py` | MQTT Packet Crafting simulator (Devin) |
-| `simulate_coap_replay.py` | CoAP Replay simulator (Widyane) |
+| `simulate_coap_replay.py` | MQTT DDoS (TCP SYN Flood) simulator (Widyane) |
 | `run_all_attacks.py` | Unified demo: normal baseline → all 4 attacks in sequence |
 | `models/svm_model.py` | SVM comparison model (stratified 20 % sample + StandardScaler) |
 | `requirements.txt` | Python dependencies |
@@ -138,7 +159,7 @@ Runs five phases in sequence:
 2. **MQTT Publish Flood** (Aleena) — rapid PUBLISH flood, IP 192.168.1.101 blocked
 3. **MQTT Auth Bypass** (Caden) — CONNECT with no password, IP 192.168.1.102 blocked
 4. **MQTT Packet Crafting** (Devin) — malformed packets + RST, IP 192.168.1.103 blocked
-5. **CoAP Replay** (Widyane) — UDP/CoAP replayed packets, IP 192.168.1.104 blocked
+5. **MQTT DDoS (TCP SYN Flood)** (Widyane) — TCP SYN flood to port 1883, IP 192.168.1.104 blocked
 
 Optional flags:
 ```bash
@@ -201,9 +222,15 @@ performance against the Random Forest.
 - **Per-attack-type labels in the dataset** — `Attack.csv` has no column
   identifying which attack type each row belongs to; all 80,126 rows carry the
   same `class=Attack` label. The four simulators separate attack types by
-  applying network-signature filters (e.g. `tcp.flags.reset==1` for Packet
-  Crafting), but the model itself still does binary classification only
-  (normal vs. attack) — it does not identify the specific attack type
+  applying network-signature filters verified against the raw packet fields
+  (see the filter table above), but the model itself still does binary
+  classification only (normal vs. attack) — it does not identify the specific
+  attack type
+- **CoAP Replay traffic absent from dataset** — the paper describes a CoAP
+  Replay attack, but the full Attack.csv contains zero UDP packets
+  (`ip.proto` is 6 on every row). Widyane's simulator therefore covers the
+  MQTT DDoS (TCP SYN Flood) component, which is also named in the paper's
+  introduction and is present in the dataset
 - **SVM on full dataset** — training would exceed an hour; the script uses a
   20 % stratified sample
 

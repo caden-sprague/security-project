@@ -12,7 +12,7 @@ Attack phases:
   2. MQTT Publish Flood          (Aleena Tomy)       — 192.168.1.101
   3. MQTT Authentication Bypass  (Caden Sprague)     — 192.168.1.102
   4. MQTT Packet Crafting        (Devin Schupbach)   — 192.168.1.103
-  5. CoAP Replay                 (Widyane Kasbi)     — 192.168.1.104
+  5. MQTT DDoS (TCP SYN Flood)   (Widyane Kasbi)     — 192.168.1.104
 
 iptables DROP rules are created for each detected attack IP and cleaned up
 at the end. On Windows or without root, the IPS action is logged/printed
@@ -223,7 +223,7 @@ def main():
         ("Phase 2 — MQTT Publish Flood     (Aleena Tomy)",      run_flood),
         ("Phase 3 — MQTT Auth Bypass       (Caden Sprague)",    run_auth_bypass),
         ("Phase 4 — MQTT Packet Crafting   (Devin Schupbach)",  run_packet_crafting),
-        ("Phase 5 — CoAP Replay            (Widyane Kasbi)",    run_coap_replay),
+        ("Phase 5 — MQTT DDoS (TCP SYN Flood) (Widyane Kasbi)", run_coap_replay),
     ]
 
     results = []
