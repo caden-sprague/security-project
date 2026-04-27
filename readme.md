@@ -246,4 +246,4 @@ performance against the Random Forest.
 | Random state | 100 (fully reproducible) |
 | Features | 10 (paper-selected via logistic regression importance) |
 
-Top 3 features by RF importance: `frame.time_delta`, `tcp.time_delta`, `mqtt.msgtype`
+Top 3 features by RF importance: `tcp.time_delta` (0.46), `frame.time_delta` (0.15), `mqtt.hdrflags` (0.15)

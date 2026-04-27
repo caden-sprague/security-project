@@ -144,7 +144,7 @@ def generate(n, encoder, X_test, y_test):
 def run(model=None, encoder=None, X_test=None, y_test=None,
         standalone=True, n_windows=None, window_size=None):
     """
-    Classify rolling windows of held-out CoAP replay traffic and trigger IPS.
+    Classify rolling windows of held-out MQTT DDoS (TCP SYN flood) traffic and trigger IPS.
 
     Returns:
         dict with attack_name, windows_correct, windows_total, n_blocked
