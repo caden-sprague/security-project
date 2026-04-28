@@ -4,7 +4,6 @@
 
 Based on: *A Framework for Malicious Traffic Detection in IoT Healthcare Environment*
 Hady Salim Faour et al., Sensors 2021, 21(9), 3025. https://doi.org/10.3390/s21093025
-
 ---
 
 ## Overview
@@ -247,3 +246,11 @@ performance against the Random Forest.
 | Features | 10 (paper-selected via logistic regression importance) |
 
 Top 3 features by RF importance: `tcp.time_delta` (0.46), `frame.time_delta` (0.15), `mqtt.hdrflags` (0.15)
+
+
+## Additional References
+Additonal References: A Survey on Intrusion Detection System in IoT Networks
+Md. Mahbubur Rahman et al., Cyber Security and Applications 2025, 3, 100082. https://doi.org/10.1016/j.csa.2024.100082
+
+Access Control in Healthcare IoT: A Comprehensive Survey
+Aleena Nazir et al., Engineering Reports 2026, e70766. https://doi.org/10.1002/eng2.70766
