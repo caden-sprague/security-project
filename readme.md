@@ -252,5 +252,4 @@ Top 3 features by RF importance: `tcp.time_delta` (0.46), `frame.time_delta` (0.
 Additonal References: A Survey on Intrusion Detection System in IoT Networks
 Md. Mahbubur Rahman et al., Cyber Security and Applications 2025, 3, 100082. https://doi.org/10.1016/j.csa.2024.100082
 
-Access Control in Healthcare IoT: A Comprehensive Survey
-Aleena Nazir et al., Engineering Reports 2026, e70766. https://doi.org/10.1002/eng2.70766
+Internet of Things (IoT) Connected Devices Installed Base Worldwide from 2015 to 2025. Available online: https://www.statista.com/statistics/471264/iot-number-of-connected-devices-worldwide/
